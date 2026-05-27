@@ -13,6 +13,9 @@
   /* Acústica (segmento do produto) */
   --color-acoustic-wine: #330E23;
   --color-acoustic-rose: #D4857D;
+  --color-acoustic-blue: #6B9BD1;
+  --color-acoustic-violet: #9B8BC4;
+  --color-acoustic-green: #6FB58A;
 
   /* Revestimento (paleta aprovada p/ UI do app) */
   --color-brand: #1D3C34;      /* verde primário */
