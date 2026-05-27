@@ -22,3 +22,12 @@ export const statusColors: Record<string, string> = {
   proposed: "text-acoustic-violet",
   done: "text-acoustic-green",
 };
+
+export const categoryLabels: Record<string, string> = {
+  paineis: "Painéis acústicos",
+  baffles: "Baffles",
+  divisorias: "Divisórias",
+  nuvens: "Nuvens acústicas",
+  phone_booths: "Cabines / Phone booths",
+  revestimentos: "Revestimentos",
+};
