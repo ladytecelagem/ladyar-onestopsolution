@@ -7,8 +7,9 @@ import { parsePdf } from "@/lib/pdf-parser";
 import { extractAreas, normalizeText } from "@/lib/text-utils";
 import { detectProducts, type DetectionResult } from "@/lib/legend-detector";
 
-// roda em Node runtime (unpdf não funciona em Edge)
-export const runtime = "nodejs";
+// Server actions já rodam em Node runtime por padrão no Next 16 (unpdf precisa
+// disso). NÃO usar `export const runtime` aqui — server actions exigem apenas
+// exports de funções async, qualquer outro export quebra o módulo inteiro.
 
 export type ParseResult = {
   ok: boolean;
