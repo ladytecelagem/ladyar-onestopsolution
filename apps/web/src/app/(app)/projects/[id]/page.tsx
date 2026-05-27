@@ -1,11 +1,12 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
-import { roomTypeLabels, statusLabels, statusColors } from "@/lib/labels";
+import { roomTypeLabels, statusLabels, statusColors, categoryLabels } from "@/lib/labels";
 import { FloorplanUpload } from "@/components/floorplan-upload";
 import { FloorplanList } from "@/components/floorplan-list";
 import { AnalyzeButton } from "@/components/analyze-button";
 import { AnalysisPanel } from "@/components/analysis-panel";
+import { Floorplan2D } from "@/components/floorplan-2d";
 
 export default async function ProjectPage({
   params,
@@ -43,6 +44,11 @@ export default async function ProjectPage({
     .maybeSingle();
 
   const canAnalyze = !!project.area_m2 && !!project.room_type;
+
+  const rec = analysis?.recommendations as
+    | { category: string; target_area_m2: number }
+    | null
+    | undefined;
 
   return (
     <div className="mx-auto max-w-3xl">
@@ -95,6 +101,13 @@ export default async function ProjectPage({
         ) : analysis ? (
           <div className="flex flex-col gap-4">
             <AnalysisPanel analysis={analysis} />
+            {rec && project.area_m2 && (
+              <Floorplan2D
+                areaM2={project.area_m2}
+                treatedAreaM2={rec.target_area_m2}
+                categoryLabel={categoryLabels[rec.category] ?? rec.category}
+              />
+            )}
             <AnalyzeButton
               projectId={project.id}
               label="Recalcular análise"
