@@ -1,5 +1,7 @@
 // Engine acústica :: cálculo de RT60 (Sabine), score e metas por ambiente
-// Referência: RT60 = 0.161 * V / A   (V em m³, A = área de absorção equivalente em m² sabines)
+// RT60 = 0.161 * V / A   (V em m³, A = absorção equivalente em m² sabines)
+// O briefing (Fase Briefing) refina o cálculo: pé-direito real, materiais das
+// superfícies, ocupação e uso. Sem briefing, usa defaults por tipo de ambiente.
 
 export type RoomType =
   | "open_office"
@@ -9,7 +11,8 @@ export type RoomType =
   | "reception"
   | "auditorium";
 
-// pé-direito padrão estimado por tipo de ambiente (m)
+// ---- defaults por tipo de ambiente (usados quando não há briefing) ----
+
 const CEILING_HEIGHT: Record<RoomType, number> = {
   open_office: 2.8,
   meeting_room: 2.8,
@@ -19,7 +22,6 @@ const CEILING_HEIGHT: Record<RoomType, number> = {
   auditorium: 4.5,
 };
 
-// RT60 alvo (s) por tipo de ambiente — faixa ideal de conforto acústico
 export const RT60_TARGET: Record<RoomType, number> = {
   open_office: 0.5,
   meeting_room: 0.6,
@@ -29,12 +31,52 @@ export const RT60_TARGET: Record<RoomType, number> = {
   auditorium: 1.0,
 };
 
-// coeficiente de absorção médio de uma sala "nua" (sem tratamento)
-// vidro, drywall, laje, piso duro — ambiente reverberante típico
-const BARE_ALPHA = 0.12;
+// absorção média de uma sala "nua" típica (fallback sem briefing)
+const BARE_ALPHA_DEFAULT = 0.12;
 
-// coeficiente médio das superfícies após tratamento acústico Lady
+// absorção média das superfícies após tratamento acústico Lady
 const TREATED_ALPHA = 0.35;
+
+// ---- briefing :: respostas do levantamento acústico ----
+
+export type Briefing = {
+  ceiling_height_m?: number; // pé-direito real
+  floor?: "carpete" | "vinilico" | "madeira" | "porcelanato";
+  walls?: "muito_vidro" | "misto" | "alvenaria";
+  ceiling?: "gesso" | "mineral" | "laje_exposta";
+  occupancy?: number; // nº de pessoas
+  usage?: "foco" | "colaboracao" | "misto";
+  complaint?: "eco" | "vazamento" | "ruido_externo" | "sem_queixa";
+  budget?: "baixo" | "medio" | "alto";
+};
+
+// coeficiente de absorção de cada material de superfície (médio, banda de fala)
+const FLOOR_ALPHA = {
+  carpete: 0.25,
+  vinilico: 0.06,
+  madeira: 0.08,
+  porcelanato: 0.04,
+};
+const WALL_ALPHA = {
+  muito_vidro: 0.05,
+  misto: 0.09,
+  alvenaria: 0.07,
+};
+const CEILING_ALPHA = {
+  gesso: 0.07,
+  mineral: 0.55, // forro mineral já é bom absorvedor
+  laje_exposta: 0.04,
+};
+
+// absorção equivalente de uma pessoa sentada (m² sabine)
+const PERSON_ABSORPTION = 0.45;
+
+// ajuste do RT60 alvo conforme o uso do espaço
+const USAGE_TARGET_FACTOR = {
+  foco: 0.85, // ambiente de foco pede RT60 mais curto
+  colaboracao: 1.1,
+  misto: 1.0,
+};
 
 export type AcousticResult = {
   volume_m3: number;
@@ -44,17 +86,22 @@ export type AcousticResult = {
   score_before: number; // 0-100
   score_after: number; // 0-100
   treated_area_m2: number; // área de material acústico recomendada
+  used_briefing: boolean; // true se o cálculo usou dados do briefing
 };
 
-// área total de superfícies internas (paredes + teto + piso) a partir da planta
-function surfaceArea(floorArea: number, height: number): number {
-  // aproxima a sala como quadrada: lado = sqrt(area)
-  const side = Math.sqrt(floorArea);
-  const walls = 4 * side * height;
-  return walls + 2 * floorArea; // paredes + teto + piso
+function round(n: number): number {
+  return Math.round(n * 100) / 100;
 }
 
-// score 0-100: 100 = RT60 exatamente no alvo; cai conforme se afasta
+// área total de superfícies internas (paredes + teto + piso)
+// aproxima a sala como quadrada: lado = sqrt(area)
+function surfaceArea(floorArea: number, height: number): number {
+  const side = Math.sqrt(floorArea);
+  const walls = 4 * side * height;
+  return walls + 2 * floorArea;
+}
+
+// score 0-100: 100 = RT60 no alvo; cai conforme se afasta
 function scoreFromRt60(rt60: number, target: number): number {
   const diff = Math.abs(rt60 - target);
   const score = 100 - (diff / target) * 100;
@@ -63,30 +110,58 @@ function scoreFromRt60(rt60: number, target: number): number {
 
 export function analyzeRoom(
   floorAreaM2: number,
-  roomType: RoomType
+  roomType: RoomType,
+  briefing?: Briefing | null
 ): AcousticResult {
-  const height = CEILING_HEIGHT[roomType];
-  const volume = floorAreaM2 * height;
-  const totalSurface = surfaceArea(floorAreaM2, height);
-  const target = RT60_TARGET[roomType];
+  const b = briefing ?? null;
+  const usedBriefing = !!b;
 
-  // RT60 antes do tratamento
-  const absorptionBefore = totalSurface * BARE_ALPHA;
+  // pé-direito: do briefing se informado, senão default por tipo
+  const height =
+    b?.ceiling_height_m && b.ceiling_height_m > 0
+      ? b.ceiling_height_m
+      : CEILING_HEIGHT[roomType];
+
+  const volume = floorAreaM2 * height;
+  const side = Math.sqrt(floorAreaM2);
+  const wallArea = 4 * side * height;
+  const totalSurface = surfaceArea(floorAreaM2, height);
+
+  // RT60 alvo: default por tipo, ajustado pelo uso (se houver briefing)
+  let target = RT60_TARGET[roomType];
+  if (b?.usage) target = target * USAGE_TARGET_FACTOR[b.usage];
+  target = round(target);
+
+  // absorção da sala "nua"
+  let absorptionBefore: number;
+  if (b && (b.floor || b.walls || b.ceiling)) {
+    // soma ponderada por superfície usando os materiais do briefing
+    const fA = b.floor ? FLOOR_ALPHA[b.floor] : BARE_ALPHA_DEFAULT;
+    const wA = b.walls ? WALL_ALPHA[b.walls] : BARE_ALPHA_DEFAULT;
+    const cA = b.ceiling ? CEILING_ALPHA[b.ceiling] : BARE_ALPHA_DEFAULT;
+    absorptionBefore =
+      floorAreaM2 * fA + wallArea * wA + floorAreaM2 * cA;
+  } else {
+    absorptionBefore = totalSurface * BARE_ALPHA_DEFAULT;
+  }
+
+  // pessoas absorvem som — soma à condição atual
+  if (b?.occupancy && b.occupancy > 0) {
+    absorptionBefore += b.occupancy * PERSON_ABSORPTION;
+  }
+
   const rt60Before = (0.161 * volume) / absorptionBefore;
 
-  // área de tratamento necessária para atingir o RT60 alvo
-  // A_total_alvo = 0.161 * V / RT60_alvo
+  // área de tratamento p/ atingir o RT60 alvo
   const targetAbsorption = (0.161 * volume) / target;
   const extraAbsorptionNeeded = Math.max(
     0,
     targetAbsorption - absorptionBefore
   );
-  // material acústico adiciona (TREATED_ALPHA - BARE_ALPHA) por m²
-  const treatedArea = extraAbsorptionNeeded / (TREATED_ALPHA - BARE_ALPHA);
+  const treatedArea = extraAbsorptionNeeded / (TREATED_ALPHA - BARE_ALPHA_DEFAULT);
 
-  // RT60 depois: aplica o material recomendado
   const absorptionAfter =
-    absorptionBefore + treatedArea * (TREATED_ALPHA - BARE_ALPHA);
+    absorptionBefore + treatedArea * (TREATED_ALPHA - BARE_ALPHA_DEFAULT);
   const rt60After = (0.161 * volume) / absorptionAfter;
 
   return {
@@ -97,11 +172,8 @@ export function analyzeRoom(
     score_before: scoreFromRt60(rt60Before, target),
     score_after: scoreFromRt60(rt60After, target),
     treated_area_m2: round(treatedArea),
+    used_briefing: usedBriefing,
   };
-}
-
-function round(n: number): number {
-  return Math.round(n * 100) / 100;
 }
 
 // categoria de produto recomendada por tipo de ambiente
@@ -113,3 +185,20 @@ export const RECOMMENDED_CATEGORY: Record<RoomType, string> = {
   reception: "revestimentos",
   auditorium: "paineis",
 };
+
+// a queixa do briefing pode sobrepor a categoria recomendada
+const COMPLAINT_CATEGORY: Record<string, string> = {
+  eco: "paineis",
+  vazamento: "divisorias",
+  ruido_externo: "revestimentos",
+};
+
+export function recommendedCategory(
+  roomType: RoomType,
+  briefing?: Briefing | null
+): string {
+  if (briefing?.complaint && briefing.complaint !== "sem_queixa") {
+    return COMPLAINT_CATEGORY[briefing.complaint] ?? RECOMMENDED_CATEGORY[roomType];
+  }
+  return RECOMMENDED_CATEGORY[roomType];
+}

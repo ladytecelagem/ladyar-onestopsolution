@@ -19,7 +19,7 @@ export default async function ProjectPage({
 
   const { data: project } = await supabase
     .from("projects")
-    .select("id, name, room_type, status, area_m2, archived, created_at")
+    .select("id, name, room_type, status, area_m2, archived, briefing, created_at")
     .eq("id", id)
     .single();
 
@@ -45,9 +45,12 @@ export default async function ProjectPage({
     .maybeSingle();
 
   const canAnalyze = !!project.area_m2 && !!project.room_type;
+  const hasBriefing =
+    !!project.briefing &&
+    Object.values(project.briefing).some((v) => v !== undefined && v !== null);
 
   const rec = analysis?.recommendations as
-    | { category: string; target_area_m2: number }
+    | { category: string; target_area_m2: number; used_briefing?: boolean }
     | null
     | undefined;
 
@@ -103,6 +106,32 @@ export default async function ProjectPage({
           floorplans={floorplans ?? []}
           projectId={project.id}
         />
+      </section>
+
+      <section className="mt-8">
+        <h2 className="mb-3 text-sm font-medium text-muted">
+          Briefing acústico
+        </h2>
+        <div className="flex items-center justify-between rounded-xl border border-border bg-surface p-4">
+          <div>
+            <p className="text-sm text-paper">
+              {hasBriefing
+                ? "Briefing preenchido"
+                : "Briefing não preenchido"}
+            </p>
+            <p className="mt-1 text-xs text-muted">
+              {hasBriefing
+                ? "A análise usa os dados do levantamento."
+                : "Sem briefing, a análise usa estimativas padrão do tipo de ambiente."}
+            </p>
+          </div>
+          <Link
+            href={"/projects/" + project.id + "/briefing"}
+            className="shrink-0 rounded-lg border border-gold px-4 py-2 text-sm font-medium text-gold hover:bg-gold hover:text-ink"
+          >
+            {hasBriefing ? "Editar briefing" : "Preencher briefing"}
+          </Link>
+        </div>
       </section>
 
       <section className="mt-8">

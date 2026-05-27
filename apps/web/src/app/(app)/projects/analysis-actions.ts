@@ -4,8 +4,9 @@ import { createClient } from "@/lib/supabase/server";
 import { revalidatePath } from "next/cache";
 import {
   analyzeRoom,
-  RECOMMENDED_CATEGORY,
+  recommendedCategory,
   type RoomType,
+  type Briefing,
 } from "@/lib/acoustics";
 
 export async function runAnalysis(projectId: string) {
@@ -17,7 +18,7 @@ export async function runAnalysis(projectId: string) {
 
   const { data: project } = await supabase
     .from("projects")
-    .select("id, room_type, area_m2")
+    .select("id, room_type, area_m2, briefing")
     .eq("id", projectId)
     .single();
 
@@ -27,10 +28,19 @@ export async function runAnalysis(projectId: string) {
   if (!project.room_type)
     return { error: "Defina o tipo de ambiente antes de analisar." };
 
-  const result = analyzeRoom(project.area_m2, project.room_type as RoomType);
+  const briefing = (project.briefing as Briefing | null) ?? null;
 
-  // produtos recomendados: categoria do ambiente, catálogo global ou da org
-  const category = RECOMMENDED_CATEGORY[project.room_type as RoomType];
+  const result = analyzeRoom(
+    project.area_m2,
+    project.room_type as RoomType,
+    briefing
+  );
+
+  // categoria recomendada: tipo de ambiente, podendo ser sobreposta pela queixa
+  const category = recommendedCategory(
+    project.room_type as RoomType,
+    briefing
+  );
   const { data: products } = await supabase
     .from("products")
     .select("id, name, nrc, price, coverage_m2, category")
@@ -40,10 +50,10 @@ export async function runAnalysis(projectId: string) {
   const recommendations = {
     category,
     target_area_m2: result.treated_area_m2,
+    used_briefing: result.used_briefing,
     products: products ?? [],
   };
 
-  // grava (ou substitui) a análise do projeto
   await supabase
     .from("acoustic_analysis")
     .delete()

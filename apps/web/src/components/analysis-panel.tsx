@@ -11,6 +11,7 @@ type Product = {
 type Recommendations = {
   category: string;
   target_area_m2: number;
+  used_briefing?: boolean;
   products: Product[];
 };
 
@@ -35,6 +36,13 @@ export function AnalysisPanel({ analysis }: { analysis: Analysis }) {
 
   return (
     <div className="flex flex-col gap-4">
+      {rec && (
+        <p className="text-xs text-muted">
+          {rec.used_briefing
+            ? "Cálculo baseado no briefing acústico do projeto."
+            : "Cálculo com estimativas padrão — preencha o briefing para mais precisão."}
+        </p>
+      )}
       <div className="grid grid-cols-2 gap-3">
         <Metric
           label="RT60 atual"
