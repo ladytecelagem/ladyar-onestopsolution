@@ -1,0 +1,30 @@
+@import "tailwindcss";
+@import "../styles/silka.css";
+
+/* ── Tokens de marca Lady (Brandbook R01) ────────────────── */
+@theme {
+  --font-sans: "Silka", ui-sans-serif, system-ui, sans-serif;
+
+  /* Institucional */
+  --color-ink: #101820;        /* preto institucional */
+  --color-paper: #F7F6F2;      /* off-white */
+  --color-white: #FFFFFF;
+
+  /* Acústica (segmento do produto) */
+  --color-acoustic-wine: #330E23;
+  --color-acoustic-rose: #D4857D;
+
+  /* Revestimento (paleta aprovada p/ UI do app) */
+  --color-brand: #1D3C34;      /* verde primário */
+  --color-gold: #BD9B60;       /* dourado / accent */
+
+  /* Superfícies derivadas (dark) */
+  --color-surface: #161F27;
+  --color-surface-2: #0C1217;
+  --color-border: #222E37;
+  --color-muted: #8B97A0;
+}
+
+* { border-color: var(--color-border); }
+html, body { background: var(--color-ink); color: var(--color-paper); }
+body { font-family: var(--font-sans); -webkit-font-smoothing: antialiased; }

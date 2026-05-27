@@ -1,0 +1,17 @@
+/* Silka — Lady · destino: apps/web/public/fonts/ ; importar em globals.css */
+@font-face{font-family:'Silka';src:url('/fonts/Silka-Thin.woff2') format('woff2');font-weight:100;font-style:normal;font-display:swap}
+@font-face{font-family:'Silka';src:url('/fonts/Silka-ThinItalic.woff2') format('woff2');font-weight:100;font-style:italic;font-display:swap}
+@font-face{font-family:'Silka';src:url('/fonts/Silka-ExtraLight.woff2') format('woff2');font-weight:200;font-style:normal;font-display:swap}
+@font-face{font-family:'Silka';src:url('/fonts/Silka-ExtraLightItalic.woff2') format('woff2');font-weight:200;font-style:italic;font-display:swap}
+@font-face{font-family:'Silka';src:url('/fonts/Silka-Light.woff2') format('woff2');font-weight:300;font-style:normal;font-display:swap}
+@font-face{font-family:'Silka';src:url('/fonts/Silka-LightItalic.woff2') format('woff2');font-weight:300;font-style:italic;font-display:swap}
+@font-face{font-family:'Silka';src:url('/fonts/Silka-Regular.woff2') format('woff2');font-weight:400;font-style:normal;font-display:swap}
+@font-face{font-family:'Silka';src:url('/fonts/Silka-RegularItalic.woff2') format('woff2');font-weight:400;font-style:italic;font-display:swap}
+@font-face{font-family:'Silka';src:url('/fonts/Silka-Medium.woff2') format('woff2');font-weight:500;font-style:normal;font-display:swap}
+@font-face{font-family:'Silka';src:url('/fonts/Silka-MediumItalic.woff2') format('woff2');font-weight:500;font-style:italic;font-display:swap}
+@font-face{font-family:'Silka';src:url('/fonts/Silka-SemiBold.woff2') format('woff2');font-weight:600;font-style:normal;font-display:swap}
+@font-face{font-family:'Silka';src:url('/fonts/Silka-SemiBoldItalic.woff2') format('woff2');font-weight:600;font-style:italic;font-display:swap}
+@font-face{font-family:'Silka';src:url('/fonts/Silka-Bold.woff2') format('woff2');font-weight:700;font-style:normal;font-display:swap}
+@font-face{font-family:'Silka';src:url('/fonts/Silka-BoldItalic.woff2') format('woff2');font-weight:700;font-style:italic;font-display:swap}
+@font-face{font-family:'Silka';src:url('/fonts/Silka-Black.woff2') format('woff2');font-weight:900;font-style:normal;font-display:swap}
+@font-face{font-family:'Silka';src:url('/fonts/Silka-BlackItalic.woff2') format('woff2');font-weight:900;font-style:italic;font-display:swap}
