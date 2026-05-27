@@ -7,6 +7,7 @@ import { FloorplanList } from "@/components/floorplan-list";
 import { AnalyzeButton } from "@/components/analyze-button";
 import { AnalysisPanel } from "@/components/analysis-panel";
 import { Floorplan2D } from "@/components/floorplan-2d";
+import { ProjectActions } from "@/components/project-actions";
 
 export default async function ProjectPage({
   params,
@@ -18,7 +19,7 @@ export default async function ProjectPage({
 
   const { data: project } = await supabase
     .from("projects")
-    .select("id, name, room_type, status, area_m2, created_at")
+    .select("id, name, room_type, status, area_m2, archived, created_at")
     .eq("id", id)
     .single();
 
@@ -56,10 +57,24 @@ export default async function ProjectPage({
         ← Voltar
       </Link>
       <div className="mt-3 flex items-center justify-between">
-        <h1 className="text-xl font-medium">{project.name}</h1>
+        <div className="flex items-center gap-2">
+          <h1 className="text-xl font-medium">{project.name}</h1>
+          {project.archived && (
+            <span className="rounded-md border border-border px-2 py-0.5 text-xs text-muted">
+              Arquivado
+            </span>
+          )}
+        </div>
         <span className={"text-xs " + (statusColors[project.status] ?? "text-muted")}>
           {statusLabels[project.status] ?? project.status}
         </span>
+      </div>
+
+      <div className="mt-3">
+        <ProjectActions
+          projectId={project.id}
+          archived={project.archived}
+        />
       </div>
 
       <div className="mt-5 grid grid-cols-2 gap-3">
