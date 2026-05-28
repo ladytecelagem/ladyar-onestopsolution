@@ -73,11 +73,17 @@ export default async function ProjectPage({
         </span>
       </div>
 
-      <div className="mt-3">
+      <div className="mt-3 flex items-center gap-2">
         <ProjectActions
           projectId={project.id}
           archived={project.archived}
         />
+        <Link
+          href={"/projects/" + project.id + "/editor"}
+          className="rounded-md bg-gold px-3 py-1 text-xs font-medium text-ink hover:opacity-90"
+        >
+          Abrir editor de planta
+        </Link>
       </div>
 
       <div className="mt-5 grid grid-cols-2 gap-3">
