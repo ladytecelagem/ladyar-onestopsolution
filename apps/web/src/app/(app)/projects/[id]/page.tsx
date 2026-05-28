@@ -34,7 +34,7 @@ export default async function ProjectPage({
 
   const { data: floorplans } = await supabase
     .from("floorplans")
-    .select("id, file_url, file_type, created_at")
+    .select("id, file_url, file_type, created_at, parsed_geometry")
     .eq("project_id", id)
     .order("created_at", { ascending: false });
 
