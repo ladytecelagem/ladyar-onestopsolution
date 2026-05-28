@@ -7,7 +7,7 @@ import { FloorplanList } from "@/components/floorplan-list";
 import { AnalyzeButton } from "@/components/analyze-button";
 import { AnalysisPanel } from "@/components/analysis-panel";
 import { Floorplan2D } from "@/components/floorplan-2d";
-import { ProjectActions } from "@/components/project-actions";
+import { ProjectActions } from "@/components/project-actions";import { AIAssistantPanel } from "@/components/ai-assistant-panel";
 
 export default async function ProjectPage({
   params,
@@ -19,7 +19,7 @@ export default async function ProjectPage({
 
   const { data: project } = await supabase
     .from("projects")
-    .select("id, name, room_type, status, area_m2, archived, briefing, created_at")
+    .select("id, name, room_type, status, area_m2, archived, briefing, created_at, ai_description, ai_justification")
     .eq("id", id)
     .single();
 
@@ -169,6 +169,9 @@ export default async function ProjectPage({
           </div>
         )}
       </section>
+        <section className="mt-8">
+          <AIAssistantPanel projectId={project.id} initialDescription={project.ai_description} initialJustification={project.ai_justification} />
+        </section>
     </div>
   );
 }
