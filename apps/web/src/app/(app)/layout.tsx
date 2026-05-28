@@ -29,12 +29,20 @@ export default async function AppLayout({
         </Link>
         <div className="flex items-center gap-4 text-xs text-muted">
           {profile.is_admin && (
-            <Link
-              href="/admin/legends"
-              className="rounded-md border border-gold px-3 py-1 text-gold hover:bg-gold hover:text-ink"
-            >
-              Admin
-            </Link>
+            <>
+              <Link
+                href="/admin/produtos"
+                className="rounded-md border border-gold px-3 py-1 text-gold hover:bg-gold hover:text-ink"
+              >
+                Produtos
+              </Link>
+              <Link
+                href="/admin/legends"
+                className="rounded-md border border-gold px-3 py-1 text-gold hover:bg-gold hover:text-ink"
+              >
+                Legendas
+              </Link>
+            </>
           )}
           <span>{profile.full_name ?? user.email}</span>
           <form action={signout}>
