@@ -1,0 +1,38 @@
+{
+    "name": "@ladyar/web",
+    "version": "0.1.0",
+    "private": true,
+    "scripts": {
+          "dev": "next dev",
+          "build": "next build",
+          "start": "next start",
+          "lint": "eslint"
+    },
+    "dependencies": {
+          "next": "^16.2.6",
+          "react": "^19.2.0",
+          "react-dom": "^19.2.0",
+          "@supabase/supabase-js": "^2.47.10",
+          "@supabase/ssr": "^0.5.2",
+          "class-variance-authority": "^0.7.1",
+          "clsx": "^2.1.1",
+          "tailwind-merge": "^2.6.0",
+          "lucide-react": "^0.469.0",
+          "unpdf": "^1.6.2",
+          "@anthropic-ai/sdk": "^0.99.0",
+          "konva": "^10.3.0",
+          "react-konva": "^19.2.4",
+          "pdfjs-dist": "^4.10.38"
+    },
+    "devDependencies": {
+          "typescript": "^5.7.3",
+          "@types/node": "^22.10.7",
+          "@types/react": "^19.2.0",
+          "@types/react-dom": "^19.2.0",
+          "tailwindcss": "^4.0.0",
+          "@tailwindcss/postcss": "^4.0.0",
+          "postcss": "^8.5.1",
+          "eslint": "^9.18.0",
+          "eslint-config-next": "^16.2.6"
+    }
+}
